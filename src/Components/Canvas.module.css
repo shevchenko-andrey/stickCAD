@@ -1,0 +1,13 @@
+.wrapper {
+  width: 75%;
+  margin: 100px auto;
+}
+.button {
+  display: block;
+  padding: 0px 10px;
+  margin-top: 25px;
+  font-size: 20px;
+  color: red;
+  border: 1px solid red;
+  background: none;
+}
