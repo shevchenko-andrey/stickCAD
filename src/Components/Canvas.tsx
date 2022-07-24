@@ -1,18 +1,15 @@
 import React, { Component, createRef } from "react";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { RoughGenerator } from "roughjs/bin/generator";
-import { Drawable } from "roughjs/bin/core";
 import styles from "./Canvas.module.css";
-import { createLine } from "../Helpers/CreateLine";
+import { createLine } from "../Helpers/createLine";
 import { getCursorPosition } from "../Helpers/getCursorPosition";
+import { Element } from "../Interfaces/Element";
+import { replaseLastElement } from "../Helpers/replaseLastElement";
+import { createDot } from "../Helpers/createDot";
+import { redrawCanvas } from "../Helpers/redrawCanvas";
 const { wrapper, button } = styles;
-interface Line {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-  roughElement: Drawable | undefined;
-}
+
 interface State {
   ref: null | HTMLCanvasElement;
   rc:
@@ -24,8 +21,7 @@ interface State {
         gen: RoughGenerator;
         draw: any;
       };
-  elements: [] | Line[];
-  position: [number, number];
+  elements: [] | Element[];
   drawing: boolean;
 }
 export class Canvas extends Component<{}, State> {
@@ -33,7 +29,6 @@ export class Canvas extends Component<{}, State> {
   state: State = {
     ref: null,
     rc: null,
-    position: [0, 0],
     elements: [],
     drawing: false,
   };
@@ -58,17 +53,24 @@ export class Canvas extends Component<{}, State> {
     );
     if (prevState.elements !== elements) {
       context?.clearRect(0, 0, ref?.width || 0, ref?.height || 0);
-      elements.forEach((element) => {
-        rc?.draw(element.roughElement);
-      });
+      // rc?.draw(createDot(10, 10));
+      // elements.forEach((element) => {
+      //   // const interectDot = createDot(element);
+      //   // if (interectDot) {
+      //   // rc?.draw(interectDot);
+      //   // }
+
+      //   rc?.draw(element.roughElement);
+      // });
+      if (rc) redrawCanvas(elements, rc);
     }
   };
 
   hendleClick = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-    const { offsetX, offsetY } = e.nativeEvent;
-    const { drawing } = this.state;
+    const { drawing, ref } = this.state;
+    const { canvasX, canvasY } = getCursorPosition(e, ref);
     if (!drawing) {
-      const newLine = createLine(offsetX, offsetY, offsetX, offsetY);
+      const newLine = createLine(canvasX, canvasY, canvasX, canvasY);
 
       if (!newLine) return;
 
@@ -81,24 +83,25 @@ export class Canvas extends Component<{}, State> {
     }
   };
   hendleContextMenu = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
+    const { elements } = this.state;
     e.preventDefault();
     e.stopPropagation();
-    this.setState({ drawing: false, position: [0, 0] });
+    this.setState({
+      drawing: false,
+      elements: elements.slice(0, elements.length - 1),
+    });
     return false;
   };
   hendleMouseMove = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-    const { drawing, elements } = this.state;
+    const { drawing, elements, ref } = this.state;
     if (!drawing) return;
-    const { offsetX, offsetY } = e.nativeEvent;
-
+    const { canvasX, canvasY } = getCursorPosition(e, ref);
     const index = elements.length - 1;
     const { x1, y1 } = elements[index];
-    const updatedLine = createLine(x1, y1, offsetX, offsetY);
-    const copyLines = [...elements];
-    copyLines[index] = updatedLine;
-    this.setState((prevState) => {
-      return { elements: copyLines };
-    });
+    const updatedLine = createLine(x1, y1, canvasX, canvasY);
+    const newLines = replaseLastElement(elements, updatedLine);
+
+    this.setState({ elements: newLines });
   };
   render(): React.ReactNode {
     const { hendleClick, hendleMouseMove, hendleContextMenu, canvasRef } = this;
