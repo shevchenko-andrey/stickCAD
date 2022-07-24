@@ -1,3 +1,5 @@
+import { findlineLength } from "./findLinelength";
+
 export const findIntersectDots = (
   x1: number,
   y1: number,
@@ -29,5 +31,31 @@ export const findIntersectDots = (
   }
   dot[0] = x3 + (x4 - x3) * n; // x3 + (-b(x))*n
   dot[1] = y3 + (y4 - y3) * n; // y3 +(-b(y))*n
+  const lineLength = findlineLength(x1, y1, x2, y2);
+  const SecondLineLength = findlineLength(x3, y3, x4, y4);
+  const LengthToDotByX = findlineLength(x1, y1, dot[0], dot[1]);
+  const LengthToDotByY = findlineLength(x2, y2, dot[0], dot[1]);
+  const SecondLengthToDotByX = findlineLength(x3, y3, dot[0], dot[1]);
+  const SecondLengthToDotByY = findlineLength(x4, y4, dot[0], dot[1]);
+  if (lineLength < LengthToDotByX) {
+    return;
+  }
+  if (lineLength < LengthToDotByY) {
+    return;
+  }
+
+  if (SecondLineLength < LengthToDotByX) {
+    return;
+  }
+  if (SecondLineLength < LengthToDotByY) {
+    return;
+  }
+  if (SecondLineLength < SecondLengthToDotByX) {
+    return;
+  }
+  if (SecondLineLength < SecondLengthToDotByY) {
+    return;
+  }
+
   return dot;
 };

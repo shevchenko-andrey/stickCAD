@@ -36,13 +36,14 @@ export const redrawCanvas = (
       if (!dot) {
         continue;
       }
+
       const [dotX, dotY] = dot;
       const dotElement = createDot(dotX, dotY);
       intersectDots.add(dotElement);
     }
   });
 
-  let newElements = [...Array.from(intersectDots), ...elements];
+  let newElements = [...elements, ...Array.from(intersectDots)];
 
   newElements.forEach((element) => {
     rc.draw(element.roughElement);
